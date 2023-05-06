@@ -5,7 +5,6 @@ import { fetchPictures } from './fetchPictures';
 
 const form = document.querySelector('#search-form');
 const containerGallery = document.querySelector('.gallery');
-
 const target = document.querySelector('.js-guard');
 
 let currentPage = 1;
@@ -57,7 +56,6 @@ function onSearch(evt) {
   fetchPictures(searchQuery.value)
     .then(datas => {
       const { hits, totalHits, total } = datas.data;
-
       if (!hits.length) {
         return Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'

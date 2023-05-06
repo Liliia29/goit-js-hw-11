@@ -12,8 +12,7 @@ let currentPage = 1;
 let gallery = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
-
-function createPictures(arr) {
+function createCards(arr) {
   return arr
     .map(
       ({
@@ -46,31 +45,29 @@ function createPictures(arr) {
     )
     .join('');
 }
-
 form.addEventListener('submit', onSearch);
-
 function onSearch(evt) {
   evt.preventDefault();
   const { searchQuery } = evt.currentTarget.elements;
-
+  if (!searchQuery.value) {
+    return Notify.failure('Please enter a search query.');
+  }
   fetchPictures(searchQuery.value)
-    .then(datas => {
+    .then((datas) => {
       const { hits, totalHits, total } = datas.data;
       if (!hits.length) {
         return Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
       } else {
-        containerGallery.innerHTML = createPictures(datas.data.hits);
+        containerGallery.innerHTML = createCards(datas.data.hits);
         document.body.backgroundSize = 'contain';
         observer.observe(target);
         gallery.refresh();
         Notify.info(`Hooray! We found ${totalHits} images.`);
-
         const { height: cardHeight } = document
           .querySelector('.gallery')
           .firstElementChild.getBoundingClientRect();
-
         window.scrollBy({
           top: cardHeight * 2,
           behavior: 'smooth',
@@ -83,28 +80,24 @@ function onSearch(evt) {
         );
       }
     })
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
 }
-
 let options = {
   root: null,
   rootMargin: '200px',
   threshold: 1.0,
 };
-
 let observer = new IntersectionObserver(onLoad, options);
 function onLoad(entries, observer) {
   console.log(entries);
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       currentPage += 1;
-
       fetchPictures(form.searchQuery.value, currentPage)
         .then(datas => {
           const { hits } = datas.data;
           containerGallery.insertAdjacentHTML('beforeend', createCards(hits));
           observer.observe(target);
-
           if (hits.length < 40) {
             observer.unobserve(target);
             Notify.failure(
